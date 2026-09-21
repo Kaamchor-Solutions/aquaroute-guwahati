@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dfe3e7">
+<meta name="description" content="Live rain and known waterlogging zones across Guwahati, so you can pick a route that stays dry.">
+<title>AquaRoute Guwahati</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Drawn icon set. One stroke weight, round caps, no emoji anywhere. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="5.5" r="2.5"/>
+      <path d="M8 18.5h6a4 4 0 0 0 0-8H10a4 4 0 0 1 0-8h6"/>
+    </symbol>
+    <symbol id="i-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2"/>
+      <path d="M12 2v3M12 19v3M22 12h-3M5 12H2"/>
+    </symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 4v14M7 18l-3-3M7 18l3-3"/><path d="M17 20V6M17 6l-3 3M17 6l3 3"/>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2.2l1.2-2h8.2l1.2 2h2.2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z"/>
+      <circle cx="12" cy="12.8" r="3.4"/>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/>
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5.5 21V4M5.5 5h11l-2 3.5 2 3.5h-11"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M6 6l12 12M18 6L6 18"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+    </symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M3 13.5 12 18.5l9-5"/>
+    </symbol>
+    <symbol id="i-centre" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+      <path d="M12 2.5v2.5M12 19v2.5M21.5 12H19M5 12H2.5"/>
+    </symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3.5c3.4 4 5.5 6.7 5.5 9.3a5.5 5.5 0 0 1-11 0c0-2.6 2.1-5.3 5.5-9.3Z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="map" role="application" aria-label="Map of Guwahati showing known waterlogging zones"></div>
+
+<!-- Rain. Frosted glass over the map, the headline set in the serif, the peak
+     figure given the size it deserves. The language switch lives on this row
+     because it is the top right of the screen and nothing else is there. -->
+<header class="rain" id="status" data-mode="loading">
+  <div class="rain-head-row">
+    <p class="eyebrow" data-i18n="rain_over">Rain over Guwahati</p>
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language to Assamese">অস</button>
+  </div>
+
+  <div class="rain-top">
+    <div class="rain-copy">
+      <h1 class="rain-head" id="statusLine" data-i18n-html="rain_checking">Checking the sky</h1>
+      <p class="rain-sub" id="statusSub" data-i18n="rain_checking_sub">Live rainfall, updated every ten minutes</p>
+      <p class="rain-stats" id="rainStats"></p>
+    </div>
+    <div class="rain-figure">
+      <div class="rain-peak" id="rainPeak">&middot;</div>
+      <div class="rain-unit" data-i18n="rain_unit">mm/h peak</div>
+    </div>
+  </div>
+
+  <div class="rain-detail" id="rainDetail">
+    <div class="bars" id="bars" aria-hidden="true"></div>
+    <p class="rain-foot" id="forecastFoot"></p>
+  </div>
+
+  <button class="rain-more" id="rainMore" type="button" aria-expanded="true" aria-controls="rainDetail">
+    <span class="chev" aria-hidden="true"></span>
+    <span class="sr-only" data-i18n="forecast_toggle">Show or hide the twelve hour forecast</span>
+  </button>
+</header>
+
+<!-- Map controls, in the band between the rain card and the panel. -->
+<div class="mapctl" id="mapctl">
+  <button type="button" id="osmBtn" aria-label="OpenStreetMap base" aria-pressed="false" title="OSM">
+    <svg class="ic"><use href="#i-pin"/></svg>
+  </button>
+  <button type="button" id="satBtn" data-i18n-aria="satellite" aria-label="Satellite" aria-pressed="false">
+    <svg class="ic"><use href="#i-layers"/></svg>
+  </button>
+  <button type="button" id="centreBtn" data-i18n-aria="recentre" aria-label="Back to Guwahati">
+    <svg class="ic"><use href="#i-centre"/></svg>
+  </button>
+</div>
+
+<!-- ROUTE ------------------------------------------------------------- -->
+<section class="panel" id="panelRoute" data-tab="route">
+  <div class="card">
+    <button class="od" id="odBtn" type="button" aria-expanded="false" aria-controls="planForm">
+      <span class="eyebrow" id="odLabel">Zoo Road &rarr; Six Mile</span>
+      <span class="od-edit" data-i18n="edit">Edit</span>
+    </button>
+
+    <form class="plan" id="planForm" hidden>
+      <div class="field">
+        <label for="fromInput" data-i18n="from">From</label>
+        <div class="field-row">
+          <input id="fromInput" type="text" autocomplete="off" spellcheck="false"
+                 data-i18n-ph="from_ph" placeholder="Zoo Road, Guwahati" value="Zoo Road, Guwahati">
+          <button class="icon-btn" id="locateBtn" type="button" aria-label="Use my current location">
+            <svg class="ic"><use href="#i-locate"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="swap" id="swapBtn" type="button" aria-label="Swap start and destination">
+        <svg class="ic"><use href="#i-swap"/></svg>
+      </button>
+
+      <div class="field">
+        <label for="toInput" data-i18n="to">To</label>
+        <div class="field-row">
+          <input id="toInput" type="text" autocomplete="off" spellcheck="false"
+                 data-i18n-ph="to_ph" placeholder="Six Mile, Guwahati" value="Six Mile, Guwahati">
+        </div>
+      </div>
+
+      <button class="go" id="goBtn" type="submit">
+        <svg class="ic"><use href="#i-route"/></svg>
+        <span id="goLabel" data-i18n="find_route">Find a dry route</span>
+      </button>
+    </form>
+
+    <!-- The verdict, written as a sentence rather than a label. -->
+    <p class="verdict-line" id="verdictLine" data-i18n="verdict_idle">Pick where you are going and I
+      will tell you what the water is doing on the way.</p>
+    <div class="panel-detail" id="routeDetail">
+      <p class="verdict-sub" id="verdictSub"></p>
+
+      <div class="routes" id="results" hidden></div>
+
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+
+    <button class="panel-more" id="routeMore" type="button" hidden
+            aria-expanded="true" aria-controls="routeDetail">
+      <span class="chev" aria-hidden="true"></span>
+      <span class="sr-only" data-i18n="detail_toggle">Show or hide the detail</span>
+    </button>
+  </div>
+</section>
+
+<!-- ZONES ------------------------------------------------------------- -->
+<section class="panel" id="panelZones" data-tab="zones" hidden>
+  <div class="card">
+    <p class="eyebrow" id="zonesH"><span data-i18n="zones_title">Known waterlogging zones</span></p>
+    <ul class="zone-list" id="zoneList"></ul>
+    <p class="provenance" id="provenance"></p>
+  </div>
+</section>
+
+<!-- YOU --------------------------------------------------------------- -->
+<section class="panel" id="panelYou" data-tab="you" hidden>
+  <div class="card">
+    <p class="eyebrow" data-i18n="your_account">Your account</p>
+    <div class="account" id="account">
+      <svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>
+      <span class="account-who" id="accountWho" data-i18n="not_signed_in">Not signed in</span>
+      <button class="link" id="accountAction" type="button" data-i18n="sign_in">Sign in</button>
+    </div>
+    <button class="ghost-btn wide" id="myReportsBtn" type="button" hidden data-i18n="my_reports">My reports</button>
+    <p class="fineprint" data-i18n="account_why">Reading the map needs no account, and neither does posting a report.
+      Sign in only if you want to take a report down later from any phone rather than only the one you
+      posted it from.</p>
+  </div>
+</section>
+
+<!-- The tab bar. Frosted, floating, four destinations. -->
+<nav class="tabbar" id="tabbar" aria-label="Sections">
+  <button type="button" data-tab="route" aria-current="page" data-i18n="tab_route">Route</button>
+  <button type="button" data-tab="zones" data-i18n="tab_zones">Zones</button>
+  <button type="button" data-tab="report" data-i18n="tab_report">Report</button>
+  <button type="button" data-tab="you" data-i18n="tab_you">You</button>
+</nav>
+
+<div class="modal" id="composer" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="composerH">
+    <div class="modal-head">
+      <h2 id="composerH" data-i18n="report_here">Report water here</h2>
+      <button class="icon-btn ghost" id="composerClose" type="button" aria-label="Close">
+        <svg class="ic"><use href="#i-close"/></svg>
+      </button>
+    </div>
+
+    <div class="where" id="where">
+      <svg class="ic"><use href="#i-pin"/></svg>
+      <span id="whereText" data-i18n="finding_you">Finding you</span>
+      <button class="link" id="pickOnMap" type="button" data-i18n="move_pin">Move the pin</button>
+    </div>
+
+    <fieldset class="sev">
+      <legend data-i18n="how_bad">How bad is it?</legend>
+      <div class="sev-row" id="sevRow">
+        <button type="button" data-sev="passable">
+          <b data-i18n="sev_passable">Passable</b><span data-i18n="sev_passable_sub">Wet, but you can drive it</span>
+        </button>
+        <button type="button" data-sev="slow">
+          <b data-i18n="sev_slow">Slow</b><span data-i18n="sev_slow_sub">Crawling, water is deep</span>
+        </button>
+        <button type="button" data-sev="impassable">
+          <b data-i18n="sev_impassable">Impassable</b><span data-i18n="sev_impassable_sub">Turn around</span>
+        </button>
+      </div>
+    </fieldset>
+
+    <label class="shot" id="shotLabel" for="shotInput">
+      <input id="shotInput" type="file" accept="image/*" capture="environment" hidden>
+      <div class="shot-empty" id="shotEmpty">
+        <svg class="ic"><use href="#i-camera"/></svg>
+        <b data-i18n="add_photo">Add a photo</b>
+        <span data-i18n="add_photo_sub">Optional, but it is what makes a report believable</span>
+      </div>
+      <img id="shotPreview" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" hidden>
+    </label>
+    <p class="shot-note" id="shotNote" hidden></p>
+
+    <label class="field-lite" for="noteInput" data-i18n="anything_add">Anything to add?</label>
+    <input id="noteInput" type="text" maxlength="160"
+           data-i18n-ph="note_ph" placeholder="Knee-deep outside the petrol pump">
+
+    <p class="msg" id="composerMsg" role="status"></p>
+
+    <div class="modal-actions">
+      <button class="ghost-btn" id="composerCancel" type="button" data-i18n="cancel">Cancel</button>
+      <button class="go" id="composerSend" type="button"><span id="sendLabel" data-i18n="post_report">Post report</span></button>
+    </div>
+
+    <p class="fineprint" data-i18n="report_fineprint">Photos are shrunk and re-encoded on your phone
+      before they are sent, which removes the GPS position and device details your camera writes into
+      every picture. Every report disappears after twelve hours.</p>
+  </div>
+</div>
+
+<div class="modal" id="auth" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="authH">
+    <div class="modal-head">
+      <h2 id="authH" data-i18n="auth_title">Sign in to report</h2>
+      <button class="icon-btn ghost" id="authClose" type="button" aria-label="Close">
+        <svg class="ic"><use href="#i-close"/></svg>
+      </button>
+    </div>
+
+    <p class="auth-why" id="authWhy" data-i18n="auth_why">Reading the map needs nothing. Posting a
+      report needs an account, so you can take a report down later from any phone.</p>
+
+    <!-- Google renders its own button in here. The block stays hidden unless
+         the deployment has a client id, so it is never shown broken. -->
+    <div class="gwrap" id="gwrap" hidden>
+      <div id="gbtn"></div>
+      <div class="or"><span data-i18n="auth_or">or</span></div>
+    </div>
+
+    <div class="tabs" id="authTabs" role="tablist">
+      <button type="button" role="tab" data-tab="login" aria-selected="true" data-i18n="auth_have">I have an account</button>
+      <button type="button" role="tab" data-tab="register" aria-selected="false" data-i18n="auth_create">Create one</button>
+    </div>
+
+    <form class="auth-form" id="authForm">
+      <label class="field-lite" for="authName" id="authNameLabel" hidden data-i18n="your_name">Your name</label>
+      <input id="authName" type="text" maxlength="60" autocomplete="name" hidden
+             data-i18n-ph="your_name_ph" placeholder="What should we call you?">
+
+      <label class="field-lite" for="authEmail" data-i18n="email">Email</label>
+      <input id="authEmail" type="email" autocomplete="email" required
+             data-i18n-ph="email_ph" placeholder="you@example.com">
+
+      <label class="field-lite" for="authPassword" data-i18n="password">Password</label>
+      <input id="authPassword" type="password" autocomplete="current-password" required
+             data-i18n-ph="password_ph" placeholder="At least ten characters">
+      <p class="fineprint" id="authHint" hidden data-i18n="password_hint">Ten characters or more. A
+        short sentence you will remember beats a short password you will not.</p>
+
+      <p class="msg" id="authMsg" role="status"></p>
+
+      <div class="modal-actions">
+        <button class="ghost-btn" id="authCancel" type="button" data-i18n="cancel">Cancel</button>
+        <button class="go" id="authSubmit" type="submit"><span id="authLabel" data-i18n="sign_in">Sign in</span></button>
+      </div>
+    </form>
+
+    <p class="fineprint" data-i18n="auth_fineprint">Your password is never stored. Only a scrambled
+      version of it is kept, and it cannot be turned back into your password. We ask for an email so
+      you can get back in, and it is never shown next to your reports.</p>
+  </div>
+</div>
+
+<div class="modal" id="mine" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="mineH">
+    <div class="modal-head">
+      <h2 id="mineH" data-i18n="your_reports">Your reports</h2>
+      <button class="icon-btn ghost" id="mineClose" type="button" aria-label="Close">
+        <svg class="ic"><use href="#i-close"/></svg>
+      </button>
+    </div>
+    <ul class="mine-list" id="mineList"></ul>
+    <p class="fineprint" data-i18n="mine_fineprint">Reports disappear on their own after twelve
+      hours. Take one down sooner if the water has gone.</p>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" hidden>
+  <button class="viewer-close" id="viewerClose" type="button" aria-label="Close photo">
+    <svg class="ic"><use href="#i-close"/></svg>
+  </button>
+  <img id="viewerImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Water reported at this spot">
+  <div class="viewer-bar">
+    <span id="viewerMeta"></span>
+    <button class="link" id="viewerFlag" type="button">
+      <svg class="ic"><use href="#i-flag"/></svg> <span data-i18n="not_accurate">Not accurate</span>
+    </button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

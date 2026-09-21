@@ -1,0 +1,28 @@
+{
+  // The map, the rain and the routing still run entirely in the browser.
+  // This Worker exists only so that reports can be SHARED between people.
+  // If it is down, the app still works: it just shows no reports.
+  "name": "aquaroute-guwahati",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "run_worker_first": ["/api/*", "/photo/*"]
+  },
+
+  // Public by design: a Google OAuth client id identifies the application, it
+  // does not authorise anything. Set it with:
+  //   npx wrangler deploy   (after filling it in here)
+  // Leave it empty and the Google button simply does not appear.
+  "vars": { "GOOGLE_CLIENT_ID": "" },
+
+  "d1_databases": [
+    { "binding": "DB", "database_name": "aquaroute", "database_id": "7788bac5-57d2-426e-89b8-ec78fb0ef2e9" }
+  ],
+
+  "observability": { "enabled": true }
+}

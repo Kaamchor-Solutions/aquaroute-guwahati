@@ -1,0 +1,252 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "city": "Guwahati, Assam",
+    "status": "UNVERIFIED",
+    "note": "Approximate polygons traced around geocoded locality centres. These mark localities with a public reputation for monsoon waterlogging; they are NOT surveyed drainage data and no authority has signed them off. Anyone who knows these streets should correct them at geojson.io and replace this file. The app tells users this in the interface rather than hiding it.",
+    "sources": "Locality centres resolved via OpenStreetMap Nominatim; hotspot list from the project brief.",
+    "lastReviewed": "2026-08-28"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "anil-nabin-nagar",
+        "name": "Anil Nagar and Nabin Nagar",
+        "severity": "severe",
+        "note": "Low-lying residential bowl. Among the first areas to hold water in Guwahati and among the last to drain.",
+        "typicalDepth": "knee-deep in a heavy spell",
+        "name_as": "অনিল নগৰ আৰু নবীন নগৰ",
+        "typicalDepth_as": "প্ৰবল বৰষুণত আঠু ডুব",
+        "note_as": "নিম্ন অঞ্চলৰ বসতিপূৰ্ণ এলেকা। বৰষুণ আৰম্ভ হোৱাৰ লগে লগে ইয়াতেই সকলোতকৈ আগতে পানী জমা হয়।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              91.7735,
+              26.1738
+            ],
+            [
+              91.7802,
+              26.1745
+            ],
+            [
+              91.7838,
+              26.1719
+            ],
+            [
+              91.7826,
+              26.167
+            ],
+            [
+              91.777,
+              26.1655
+            ],
+            [
+              91.7727,
+              26.1683
+            ],
+            [
+              91.7735,
+              26.1738
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "zoo-road",
+        "name": "Zoo Road and RG Baruah Road",
+        "severity": "severe",
+        "note": "Runoff from the hills collects along this stretch. The carriageway near the college dips and fills quickly.",
+        "typicalDepth": "axle-deep at the low point",
+        "name_as": "জু ৰোড আৰু আৰ জি বৰুৱা ৰোড",
+        "typicalDepth_as": "নিম্ন ঠাইত চকাৰ পাতনি ডুব",
+        "note_as": "পাহাৰৰ পৰা নামি অহা পানী এই অংশত জমা হয়। ৰাস্তাখন কেইঘণ্টামানৰ বাবে বন্ধ হৈ পৰে।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              91.766,
+              26.17
+            ],
+            [
+              91.7742,
+              26.1712
+            ],
+            [
+              91.7776,
+              26.169
+            ],
+            [
+              91.776,
+              26.1648
+            ],
+            [
+              91.769,
+              26.164
+            ],
+            [
+              91.7652,
+              26.1668
+            ],
+            [
+              91.766,
+              26.17
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "ganeshguri",
+        "name": "Ganeshguri, under the flyover",
+        "severity": "severe",
+        "note": "The underpass holds standing water. Vehicles stall here and block the junction for everyone behind them.",
+        "typicalDepth": "deep enough to stall a small car",
+        "name_as": "গণেশগুৰি, ফ্লাইঅভাৰৰ তলত",
+        "typicalDepth_as": "সৰু গাড়ী বন্ধ হৈ যোৱাকৈ গভীৰ",
+        "note_as": "আণ্ডাৰপাছত পানী থিয় হৈ থাকে। ইয়াত গাড়ী বন্ধ হৈ যায় আৰু আন গাড়ীবোৰো আটক পৰে।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              91.7862,
+              26.1482
+            ],
+            [
+              91.792,
+              26.149
+            ],
+            [
+              91.7942,
+              26.1466
+            ],
+            [
+              91.7924,
+              26.1432
+            ],
+            [
+              91.7872,
+              26.1428
+            ],
+            [
+              91.785,
+              26.1455
+            ],
+            [
+              91.7862,
+              26.1482
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bhangagarh",
+        "name": "Bhangagarh low-lying lanes",
+        "severity": "moderate",
+        "note": "The main road usually stays passable. The lanes behind it do not.",
+        "typicalDepth": "ankle to knee in the side lanes",
+        "name_as": "ভঙাগড়ৰ নিম্ন অঞ্চলৰ গলি",
+        "typicalDepth_as": "কাষৰ গলিবোৰত গোৰোহাৰ পৰা আঠুলৈ",
+        "note_as": "ডাঙৰ ৰাস্তাটোৱে সাধাৰণতে খোলা থাকে। কিন্তু ইয়াৰ পিছফালৰ গলিবোৰত পানী জমা হয়।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              91.7628,
+              26.1638
+            ],
+            [
+              91.7692,
+              26.1646
+            ],
+            [
+              91.7716,
+              26.162
+            ],
+            [
+              91.77,
+              26.1578
+            ],
+            [
+              91.7645,
+              26.1572
+            ],
+            [
+              91.7616,
+              26.1602
+            ],
+            [
+              91.7628,
+              26.1638
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "six-mile-vip",
+        "name": "Six Mile and VIP Road junction",
+        "severity": "moderate",
+        "note": "Drains back up at the junction. Traffic slows to a crawl well before the water is actually deep.",
+        "typicalDepth": "ankle-deep, but the jam lasts hours",
+        "name_as": "ছিক্স মাইল আৰু ভি আই পি ৰোডৰ চতৰ",
+        "typicalDepth_as": "গোৰোহা ডুব, কিন্তু জামখন ঘণ্টাজুৰি",
+        "note_as": "চতৰটোত নলা উপচি পৰে। পানী গভীৰ হোৱাৰ বহু আগতেই যান-বাহনৰ গতি বৰ লাহে হৈ পৰে।"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              91.8092,
+              26.15
+            ],
+            [
+              91.8168,
+              26.1508
+            ],
+            [
+              91.8192,
+              26.1478
+            ],
+            [
+              91.8174,
+              26.144
+            ],
+            [
+              91.811,
+              26.1434
+            ],
+            [
+              91.808,
+              26.1466
+            ],
+            [
+              91.8092,
+              26.15
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

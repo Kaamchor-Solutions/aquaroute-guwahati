@@ -1,0 +1,12 @@
+{
+  "name": "aquaroute-jorhat",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -p 3000 -s",
+    "worker:dev": "npx wrangler dev",
+    "worker:deploy": "npx wrangler deploy",
+    "worker:create-db": "npx wrangler d1 create aquaroute-reports"
+  },
+  "description": "Flood-avoidance web app for commuters in Jorhat, Assam"
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0e17">
+  <title>AquaRoute Jorhat</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Map fills everything -->
+    <div id="map"></div>
+    <div id="map-timeout" hidden>
+      <p data-i18n="map_timeout">Map could not load. Check your connection.</p>
+    </div>
+
+    <!-- Top bar floats over map -->
+    <header id="topbar">
+      <div id="alert-badge" class="alert-clear" role="status" aria-live="polite">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+        </svg>
+        <span id="alert-text" data-i18n="alert_clear">Clear</span>
+      </div>
+      <div id="topbar-actions">
+        <button id="btn-lang" class="icon-btn" aria-label="Switch language">EN</button>
+        <button id="btn-locate" class="icon-btn" aria-label="My location">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bottom sheet -->
+    <div id="sheet" class="sheet-collapsed">
+      <div id="sheet-handle">
+        <div id="handle-bar"></div>
+      </div>
+      <div id="sheet-content">
+
+        <!-- Route -->
+        <div id="route-section">
+          <div class="input-group">
+            <input type="text" id="input-from" data-i18n-placeholder="placeholder_from" placeholder="Starting point" autocomplete="off">
+            <input type="text" id="input-to" data-i18n-placeholder="placeholder_to" placeholder="Destination" autocomplete="off">
+          </div>
+          <button id="btn-route" class="primary-btn" data-i18n="check_route">Check Route</button>
+        </div>
+
+        <!-- Route result -->
+        <div id="route-result" hidden>
+          <div id="route-verdict"></div>
+          <div id="route-detail"></div>
+          <button id="btn-clear-route" class="secondary-btn" data-i18n="clear">Clear</button>
+        </div>
+
+        <!-- Rainfall -->
+        <div id="rainfall-section">
+          <h3 data-i18n="rainfall_title">Rainfall</h3>
+          <div id="rainfall-data">
+            <div class="rain-stat">
+              <span class="rain-label" data-i18n="rain_now">Now</span>
+              <span id="rain-current" class="rain-value">--</span>
+            </div>
+            <div class="rain-stat">
+              <span class="rain-label" data-i18n="rain_next_1h">Next 1h</span>
+              <span id="rain-1h" class="rain-value">--</span>
+            </div>
+            <div class="rain-stat">
+              <span class="rain-label" data-i18n="rain_next_3h">Next 3h</span>
+              <span id="rain-3h" class="rain-value">--</span>
+            </div>
+            <div class="rain-stat">
+              <span class="rain-label" data-i18n="rain_next_6h">Next 6h</span>
+              <span id="rain-6h" class="rain-value">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report button -->
+        <button id="btn-report" class="accent-btn" data-i18n="report_flood">Report Flooding</button>
+
+        <!-- Report form -->
+        <div id="report-form" hidden>
+          <h3 data-i18n="report_form_title">Report Flooding</h3>
+          <p class="form-note" data-i18n="report_note">Your photo is re-encoded to remove location data.</p>
+          <div class="form-group">
+            <label data-i18n="severity">Severity</label>
+            <div class="severity-options">
+              <button class="sev-btn" data-severity="1">Ankle</button>
+              <button class="sev-btn" data-severity="2">Knee</button>
+              <button class="sev-btn active" data-severity="3">Car+</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label data-i18n="optional_note">Note (optional)</label>
+            <input type="text" id="report-note" maxlength="200" data-i18n-placeholder="note_placeholder" placeholder="e.g. Near junction, traffic stopped">
+          </div>
+          <div class="form-group">
+            <label data-i18n="photo_optional">Photo (optional)</label>
+            <input type="file" id="report-photo" accept="image/*" capture="environment">
+            <div id="photo-preview" hidden><img id="photo-preview-img" alt="Preview"></div>
+          </div>
+          <div class="form-actions">
+            <button id="btn-submit-report" class="primary-btn" data-i18n="submit_report">Submit Report</button>
+            <button id="btn-cancel-report" class="secondary-btn" data-i18n="cancel">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div id="flood-disclaimer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          <span data-i18n="disclaimer">Zones derived from NDEM satellite data (1998-2022). May not reflect current drainage.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1098 @@
+/* AquaRoute Guwahati: the "Daylight" design
+   Frosted white glass over a light map. The verdict is written as a sentence in
+   a serif face; everything numeric is monospaced so figures line up and never
+   look like prose. Three semantic colours, each meaning exactly one thing:
+     blue = rain data      red = flood hazard      green = a way that is clear
+
+   Colours, radii and blur values are taken from the Claude Design handoff
+   (direction 1c) rather than re-invented, so the built screen matches the mock. */
+
+:root {
+  /* ground */
+  --bg:        #dfe3e7;
+  --bg-2:      #e8eaed;
+
+  /* frosted panels */
+  --glass:     rgba(255, 255, 255, .68);
+  --glass-hi:  rgba(255, 255, 255, .78);
+  --glass-br:  rgba(255, 255, 255, .90);
+  --blur:      blur(26px) saturate(160%);
+
+  /* ink */
+  --ink:       #132132;
+  --ink-70:    rgba(19, 33, 50, .70);
+  --ink-62:    rgba(19, 33, 50, .62);
+  --ink-50:    rgba(19, 33, 50, .50);
+  --ink-38:    rgba(19, 33, 50, .38);
+  --hair:      rgba(19, 33, 50, .12);
+
+  /* semantic */
+  --rain:      #1c5fa8;
+  --hazard:    #c8402c;
+  --hazard-dk: #a83320;
+  --hazard-bg: rgba(200, 64, 44, .08);
+  --hazard-br: rgba(200, 64, 44, .28);
+  --clear:     #0f6b50;
+  --clear-bg:  rgba(20, 120, 90, .10);
+  --clear-br:  rgba(20, 120, 90, .45);
+  --warn:      #b07407;
+
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 22px;
+  --r-xl: 26px;
+
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+
+  --lift:   0 12px 34px rgba(30, 50, 70, .16);
+  --lift-2: 0 18px 44px rgba(30, 50, 70, .20);
+  --ease:   cubic-bezier(.2, .8, .25, 1);
+
+  --sans:  "Instrument Sans", "Noto Sans Bengali", system-ui, -apple-system, sans-serif;
+  --serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --serif-as: "Noto Sans Bengali", "Instrument Serif", serif;
+  --mono:  "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* The `hidden` attribute is only a UA-stylesheet display:none, so ANY author
+   display rule silently beats it. Several rules below set display:flex on
+   elements that ship hidden, so this has to win outright. */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rain);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.ic { width: 20px; height: 20px; flex: none; }
+
+/* ------------------------------------------------------------------ map */
+#map { position: fixed; inset: 0; background: var(--bg); }
+
+/* MapLibre's own furniture, quietened to match. */
+.maplibregl-ctrl-attrib {
+  font: 400 10px/1.4 var(--sans);
+  background: rgba(255, 255, 255, .7) !important;
+  border-radius: 8px 0 0 0;
+}
+.maplibregl-ctrl-attrib a { color: var(--ink-50); }
+.maplibregl-ctrl-group {
+  border-radius: 14px !important;
+  box-shadow: var(--lift) !important;
+  border: 1px solid var(--glass-br) !important;
+}
+/* Lift the map's own controls clear of the tab bar, and keep them above the
+   panels so they stay reachable. Attribution stays collapsed to its button
+   until tapped: expanded, it reads through the frosted panel as a smudge. */
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left {
+  bottom: calc(74px + var(--safe-b));
+  z-index: 45;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) .maplibregl-ctrl-attrib-inner {
+  display: none;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) {
+  background: transparent !important;
+}
+
+/* Popups are the one piece of MapLibre chrome that carries our own words. */
+.maplibregl-popup-content {
+  border-radius: var(--r-sm) !important;
+  padding: 10px 13px !important;
+  background: var(--glass-hi) !important;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-br);
+  box-shadow: var(--lift) !important;
+  font: 400 12.5px/1.45 var(--sans) !important;
+  color: var(--ink-70) !important;
+}
+.maplibregl-popup-content strong { color: var(--hazard-dk); font-weight: 600; }
+.maplibregl-popup-tip { border-top-color: var(--glass-hi) !important; }
+
+/* --------------------------------------------------------- shared glass */
+.card {
+  padding: 16px 18px;
+  border-radius: var(--r-xl);
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-br);
+  box-shadow: var(--lift-2);
+}
+
+.eyebrow {
+  margin: 0;
+  font: 400 11px var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+
+/* Assamese script needs more room per line and has no italic tradition, so the
+   display sizes come down a little and the italic emphasis becomes weight. */
+:root[data-lang="as"] {
+  --serif: var(--serif-as);
+}
+:root[data-lang="as"] .rain-head { font-size: 22px; line-height: 1.35; }
+:root[data-lang="as"] .verdict-line { font-size: 21px; line-height: 1.45; }
+:root[data-lang="as"] .modal-head h2 { font-size: 20px; }
+:root[data-lang="as"] .verdict-line em,
+:root[data-lang="as"] .verdict-line .clear-said { font-style: normal; font-weight: 600; }
+:root[data-lang="as"] .eyebrow,
+:root[data-lang="as"] .field label,
+:root[data-lang="as"] .field-lite,
+:root[data-lang="as"] .sev legend { letter-spacing: .02em; text-transform: none; font-size: 12px; }
+
+/* ------------------------------------------------------------- language */
+.rain-head-row {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 2px;
+}
+.rain-head-row .eyebrow { flex: 1; min-width: 0; }
+
+.lang {
+  flex: none;
+  min-width: 42px; height: 28px; padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  color: var(--ink-70);
+  border: 1px solid var(--hair);
+  font: 600 12px var(--sans);
+  cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s, transform .12s;
+}
+.lang:hover { color: var(--ink); border-color: var(--ink-38); background: #fff; }
+.lang:active { transform: scale(.94); }
+
+/* ---------------------------------------------------------- map controls */
+/* Sits just under the rain card, in the band of map that is always visible.
+   Mid-screen looked fine until a tall panel opened underneath it and the two
+   collided; --rain-h is measured in JS because the card's height changes with
+   the forecast text. */
+.mapctl {
+  position: fixed;
+  right: 12px;
+  top: calc(var(--rain-h, 240px) + 22px + var(--safe-t));
+  z-index: 26;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: top .3s var(--ease);
+}
+.mapctl button {
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  border-radius: 16px;
+  background: var(--glass-hi);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid var(--glass-br);
+  box-shadow: var(--lift);
+  color: var(--ink-62);
+  cursor: pointer;
+  transition: color .16s, background .16s, transform .12s;
+}
+.mapctl button:hover { color: var(--ink); }
+.mapctl button:active { transform: scale(.93); }
+.mapctl button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.mapctl .ic { width: 20px; height: 20px; }
+
+/* ----------------------------------------------------------------- rain */
+.rain {
+  position: fixed;
+  top: calc(12px + var(--safe-t));
+  left: 12px; right: 12px;
+  z-index: 30;
+  max-height: 42vh;
+  overflow: hidden;
+  padding: 14px 16px 4px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, .62);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow: var(--lift);
+}
+
+.rain-top { display: flex; align-items: flex-start; gap: 14px; }
+.rain-copy { flex: 1; min-width: 0; }
+
+.rain-head {
+  margin: 6px 0 0;
+  font: 400 26px/1.15 var(--serif);
+  letter-spacing: -.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.rain-sub {
+  margin: 5px 0 0;
+  font: 400 12.5px/1.4 var(--sans);
+  color: var(--ink-50);
+  text-wrap: pretty;
+}
+
+.rain-stats {
+  margin: 7px 0 0;
+  font: 500 11.5px var(--mono);
+  color: var(--ink-62);
+  letter-spacing: .01em;
+}
+.rain-stats:empty { display: none; }
+
+.rain-figure { text-align: right; flex: none; }
+.rain-peak {
+  font: 400 40px/1 var(--serif);
+  color: var(--rain);
+  font-variant-numeric: tabular-nums;
+}
+.rain-unit {
+  margin-top: 3px;
+  font: 400 10px var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-50);
+}
+
+/* Mode only ever changes the accent, never the layout. */
+.rain[data-mode="monsoon"] .rain-peak { color: var(--hazard); }
+.rain[data-mode="watch"]   .rain-peak { color: var(--warn); }
+.rain[data-mode="clear"]   .rain-peak { color: var(--clear); }
+
+.bars {
+  display: flex; align-items: flex-end; gap: 4px;
+  height: 34px; margin-top: 14px;
+}
+.bar {
+  flex: 1; display: flex; align-items: flex-end; height: 100%;
+  position: relative;
+}
+/* Without this a dry twelve hours is twelve invisible bars and the row reads as
+   a rule somebody forgot to delete. */
+.bar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2px; border-radius: 2px;
+  background: rgba(19, 33, 50, .10);
+}
+.bars[data-dry="1"] .bar::after { background: rgba(19, 33, 50, .14); }
+.bar-fill {
+  width: 100%;
+  height: calc(var(--h) * 100%);
+  min-height: 2px;
+  border-radius: 2px;
+  background: rgba(28, 95, 168, .28);
+  transition: height .4s var(--ease);
+}
+.bar.wet .bar-fill { background: rgba(28, 95, 168, .55); }
+.bar.peak .bar-fill { background: var(--rain); }
+
+.rain-foot {
+  margin: 9px 0 0;
+  font: 400 11px/1.45 var(--mono);
+  color: var(--ink-38);
+  text-wrap: pretty;
+}
+.rain-foot:empty { display: none; }
+
+/* The forecast is detail. The headline, the peak and the temperature are the
+   answer, and on a short screen only the answer earns permanent space. */
+.rain-detail {
+  overflow: hidden;
+  transition: max-height .32s var(--ease), opacity .22s var(--ease);
+  max-height: 200px;
+  opacity: 1;
+}
+.rain[data-open="0"] .rain-detail {
+  max-height: 0;
+  opacity: 0;
+}
+
+.rain-more {
+  display: block; width: 100%;
+  padding: 6px 0 4px; margin-top: 2px;
+  background: none; border: 0; cursor: pointer;
+}
+.rain-more .chev {
+  display: block; width: 26px; height: 5px; margin: 0 auto;
+  border-radius: 99px;
+  background: rgba(19, 33, 50, .18);
+  transition: background .16s, transform .28s var(--ease);
+}
+.rain-more:hover .chev { background: rgba(19, 33, 50, .32); }
+.rain[data-open="0"] .rain-more .chev { transform: scaleX(.6); }
+
+/* --------------------------------------------------------------- panels */
+/* The map is the product, so it gets a guaranteed share of the screen rather
+   than whatever is left over. Subtracting a fixed 240px worked on a tall phone
+   and left a 550px window with a map band of exactly zero: the rain card and
+   the panel met in the middle. Both terms are needed. The vh cap keeps the
+   panel to a share of the screen; the second term keeps it clear of whatever
+   height the rain card actually is. Content scrolls inside. */
+.panel {
+  position: fixed;
+  left: 12px; right: 12px;
+  bottom: calc(84px + var(--safe-b));
+  z-index: 25;
+  max-height: min(
+    46vh,
+    calc(100vh - var(--rain-h, 200px) - 190px - var(--safe-t) - var(--safe-b))
+  );
+  display: flex;
+  animation: rise .28s var(--ease);
+}
+.panel .card {
+  width: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@keyframes rise {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* origin and destination, shown as a line you tap to edit */
+.od {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: none; border: 0; padding: 0 0 12px; cursor: pointer;
+  text-align: left; font: inherit;
+}
+.od .eyebrow {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.od-edit {
+  flex: none;
+  font: 500 10px var(--mono);
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-50);
+  padding: 4px 9px;
+  border: 1px solid var(--hair);
+  border-radius: 9px;
+}
+.od[aria-expanded="true"] .od-edit { color: var(--rain); border-color: rgba(28, 95, 168, .4); }
+
+/* ------------------------------------------------------------ the plan */
+.plan { padding-bottom: 4px; }
+.field + .field { margin-top: 10px; }
+.field label {
+  display: block; margin-bottom: 5px;
+  font: 400 10.5px var(--mono);
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-50);
+}
+.field-row { display: flex; gap: 8px; }
+.field input {
+  flex: 1; min-width: 0;
+  background: rgba(255, 255, 255, .72);
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  padding: 12px 13px;
+  font: inherit; font-size: 15px;
+  caret-color: var(--rain);
+}
+.field input::placeholder { color: var(--ink-38); }
+.field input:focus {
+  outline: none;
+  border-color: var(--rain);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(28, 95, 168, .12);
+}
+
+.icon-btn {
+  width: 46px; flex: none;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, .72);
+  color: var(--ink-62);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color .16s, border-color .16s;
+}
+.icon-btn:hover { color: var(--rain); border-color: rgba(28, 95, 168, .4); }
+.icon-btn[data-busy] { color: var(--rain); }
+.icon-btn.ghost { background: transparent; border-color: transparent; width: 36px; }
+.icon-btn.ghost:hover { background: rgba(19, 33, 50, .06); }
+
+.swap {
+  display: block; margin: 8px 0 8px auto;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, .72);
+  color: var(--ink-50);
+  border: 1px solid var(--hair);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.swap:hover { color: var(--rain); }
+.swap .ic { width: 16px; height: 16px; }
+
+.go {
+  width: 100%; margin-top: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 14px 16px;
+  background: var(--ink); color: #fff;
+  border: 0; border-radius: var(--r-md);
+  font: inherit; font-size: 15px; font-weight: 600; letter-spacing: -.005em;
+  cursor: pointer;
+  transition: background .16s, transform .12s;
+}
+.go:hover { background: #1d3348; }
+.go:active { transform: translateY(1px); }
+.go[disabled] { opacity: .55; cursor: default; }
+.go[data-busy] { opacity: .7; }
+.go .ic { width: 18px; height: 18px; }
+
+/* -------------------------------------------------------- the verdict */
+.verdict-line {
+  margin: 0;
+  font: 400 23px/1.25 var(--serif);
+  letter-spacing: -.01em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.verdict-line em, .verdict-line .zone-said {
+  font-style: italic;
+  color: var(--hazard);
+  font-family: var(--serif);
+}
+.verdict-line .clear-said { font-style: italic; color: var(--clear); }
+
+.verdict-sub {
+  margin: 8px 0 0;
+  font: 400 13.5px/1.5 var(--sans);
+  color: var(--ink-62);
+  text-wrap: pretty;
+}
+.verdict-sub:empty { display: none; }
+
+/* Route choices, side by side when there is a choice to make. */
+.routes { display: flex; gap: 10px; margin-top: 14px; }
+/* One route is not a choice, so it reads as a line rather than a card the size
+   of a pair of them. */
+.routes[data-one="1"] .route {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 11px 13px;
+}
+.routes[data-one="1"] .route-tag { flex: none; }
+.routes[data-one="1"] .route-time { margin-top: 0; font-size: 18px; }
+.routes[data-one="1"] .route-km { margin-top: 0; margin-left: auto; }
+
+.route {
+  flex: 1; min-width: 0;
+  display: block; text-align: left;
+  padding: 13px 14px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid var(--hair);
+  font: inherit; cursor: pointer;
+  transition: background .18s var(--ease), border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.route:hover { background: rgba(255, 255, 255, .8); }
+
+.route[data-v="clear"] { background: var(--clear-bg); border-color: rgba(20, 120, 90, .28); }
+.route[data-v="hazard"] { background: var(--hazard-bg); border-color: var(--hazard-br); }
+
+.route[aria-pressed="true"][data-v="clear"] {
+  border: 1.5px solid var(--clear-br);
+  box-shadow: 0 0 0 3px rgba(20, 120, 90, .12);
+}
+.route[aria-pressed="true"][data-v="hazard"] {
+  border: 1.5px solid rgba(200, 64, 44, .5);
+  box-shadow: 0 0 0 3px rgba(200, 64, 44, .10);
+}
+
+.route-tag {
+  font: 600 11px var(--sans);
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.route[data-v="clear"] .route-tag { color: var(--clear); }
+.route[data-v="hazard"] .route-tag { color: var(--hazard-dk); }
+
+.route-time {
+  margin-top: 7px;
+  font: 600 20px/1 var(--sans);
+  letter-spacing: -.02em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.route[data-v="hazard"] .route-time { color: var(--ink-70); }
+
+.route-km {
+  margin-top: 4px;
+  font: 400 12px var(--mono);
+  color: var(--ink-50);
+}
+
+/* ---------------------------------------------------------------- zones */
+.zone-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.zone-list li + li { border-top: 1px solid var(--hair); }
+
+.zone {
+  display: flex; align-items: baseline; gap: 10px; width: 100%;
+  padding: 11px 0;
+  background: none; border: 0; cursor: pointer;
+  font: inherit; text-align: left;
+}
+.zone-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: none;
+  transform: translateY(-2px);
+  background: var(--warn);
+}
+.zone-dot[data-s="severe"] { background: var(--hazard); }
+.zone-name {
+  flex: 1; min-width: 0;
+  font: 600 13.5px/1.35 var(--sans);
+  color: var(--ink);
+}
+.zone:hover .zone-name { color: var(--hazard-dk); }
+.zone-depth {
+  flex: none; max-width: 140px; text-align: right;
+  font: 400 11px/1.35 var(--sans);
+  color: var(--ink-50);
+}
+
+.live-count {
+  margin-left: 8px;
+  display: inline-flex; align-items: center; gap: 5px;
+  font: 500 10px var(--mono);
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--hazard-dk);
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--hazard);
+  animation: livepulse 2.4s ease-in-out infinite;
+}
+@keyframes livepulse {
+  0%, 100% { opacity: .4; transform: scale(1); }
+  50%      { opacity: 1;  transform: scale(1.3); }
+}
+
+.provenance {
+  margin: 14px 0 0;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, .45);
+  border: 1px dashed rgba(19, 33, 50, .2);
+  font: 400 11px/1.5 var(--mono);
+  color: var(--ink-50);
+  text-wrap: pretty;
+}
+.provenance b { color: var(--hazard-dk); font-weight: 600; }
+.provenance code {
+  font-family: var(--mono);
+  background: rgba(19, 33, 50, .07);
+  padding: 1px 4px; border-radius: 4px;
+}
+
+/* -------------------------------------------------------------- account */
+.account {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px; padding: 11px 13px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+}
+.account .ic { width: 17px; height: 17px; color: var(--ink-38); }
+.account[data-on="1"] .ic { color: var(--clear); }
+.account-who {
+  flex: 1; min-width: 0; color: var(--ink-70);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.account .link { flex: none; }
+
+/* --------------------------------------------------------------- tabbar */
+.tabbar {
+  position: fixed;
+  left: 12px; right: 12px;
+  bottom: calc(16px + var(--safe-b));
+  z-index: 40;
+  display: flex; gap: 6px;
+  padding: 8px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .72);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, .9);
+  box-shadow: 0 10px 28px rgba(30, 50, 70, .16);
+}
+.tabbar button {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 17px;
+  border: 0; background: transparent;
+  text-align: center;
+  font: 500 12.5px var(--sans);
+  color: var(--ink-62);
+  cursor: pointer;
+  transition: background .18s var(--ease), color .18s var(--ease);
+}
+.tabbar button:hover { color: var(--ink); }
+.tabbar button[aria-current="page"] {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- modals */
+.modal {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(19, 33, 50, .32);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.modal.picking { pointer-events: none; opacity: 0; }
+
+.modal-card {
+  width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto;
+  background: var(--glass-hi);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-br); border-bottom: 0;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 18px 18px calc(20px + var(--safe-b));
+  box-shadow: var(--lift-2);
+  animation: rise .3s var(--ease);
+}
+
+.modal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.modal-head h2 {
+  margin: 0;
+  font: 400 24px/1.2 var(--serif);
+  letter-spacing: -.01em;
+  color: var(--ink);
+  flex: 1;
+}
+
+.where {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 12px; margin-bottom: 14px;
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  font-size: 13.5px; color: var(--ink-62);
+}
+.where .ic { width: 17px; height: 17px; color: var(--rain); flex: none; }
+.where span { flex: 1; min-width: 0; }
+
+.link {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--rain);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.link .ic { width: 14px; height: 14px; }
+.link.danger { color: var(--hazard); }
+.link[disabled] { color: var(--ink-38); cursor: default; text-decoration: none; }
+
+.sev { border: 0; padding: 0; margin: 0 0 14px; }
+.sev legend {
+  padding: 0; margin-bottom: 7px;
+  font: 400 10.5px var(--mono);
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-50);
+}
+.sev-row { display: flex; gap: 7px; }
+.sev-row button {
+  flex: 1;
+  padding: 11px 9px;
+  background: rgba(255, 255, 255, .5);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  cursor: pointer; font: inherit; text-align: left;
+  transition: background .16s, border-color .16s;
+}
+.sev-row button b {
+  display: block; font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.sev-row button span {
+  display: block; margin-top: 3px;
+  font-size: 11px; line-height: 1.35; color: var(--ink-50);
+}
+.sev-row button:hover { background: rgba(255, 255, 255, .85); }
+.sev-row button[aria-pressed="true"] {
+  background: var(--hazard-bg);
+  border-color: var(--hazard-br);
+}
+.sev-row button[aria-pressed="true"] b { color: var(--hazard-dk); }
+
+.shot {
+  display: block; margin-bottom: 4px;
+  border-radius: var(--r-sm); overflow: hidden;
+  border: 1px dashed rgba(19, 33, 50, .22);
+  cursor: pointer;
+}
+.shot:hover { border-color: var(--rain); }
+.shot-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 20px 14px;
+  color: var(--ink-50);
+}
+.shot-empty .ic { width: 22px; height: 22px; color: var(--ink-38); }
+.shot-empty b { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.shot-empty span { font-size: 11.5px; text-align: center; }
+.shot img { display: block; width: 100%; max-height: 220px; object-fit: cover; }
+.shot-note { margin: 0 0 12px; font-size: 12px; color: var(--ink-50); }
+
+.field-lite {
+  display: block; margin: 12px 0 5px;
+  font: 400 10.5px var(--mono);
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-50);
+}
+#noteInput,
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+  width: 100%;
+  background: rgba(255, 255, 255, .72);
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  padding: 12px 13px;
+  font: inherit; font-size: 15px;
+  caret-color: var(--rain);
+}
+#noteInput::placeholder,
+.auth-form input::placeholder { color: var(--ink-38); }
+#noteInput:focus,
+.auth-form input:focus {
+  outline: none; border-color: var(--rain); background: #fff;
+  box-shadow: 0 0 0 3px rgba(28, 95, 168, .12);
+}
+
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.modal-actions .go { margin-top: 0; flex: 2; }
+
+.ghost-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, .5);
+  color: var(--ink-70);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  padding: 14px;
+  font: inherit; font-size: 15px; cursor: pointer;
+  transition: color .16s, border-color .16s, background .16s;
+}
+.ghost-btn:hover { color: var(--ink); background: rgba(255, 255, 255, .85); }
+.ghost-btn.wide { width: 100%; margin-top: 10px; }
+
+.fineprint {
+  margin: 14px 0 0;
+  font: 400 11.5px/1.5 var(--sans);
+  color: var(--ink-50);
+  text-wrap: pretty;
+}
+
+.msg { margin: 12px 0 0; font-size: 13.5px; color: var(--ink-62); }
+.msg:empty { display: none; }
+.msg[data-tone="bad"] { color: var(--hazard-dk); }
+
+.auth-why {
+  margin: 0 0 14px;
+  font: 400 13.5px/1.5 var(--sans);
+  color: var(--ink-62);
+  text-wrap: pretty;
+}
+
+.gwrap { margin-bottom: 6px; }
+#gbtn { display: flex; justify-content: center; min-height: 44px; }
+.or {
+  display: flex; align-items: center; gap: 12px;
+  margin: 14px 0 12px;
+  font: 400 11px var(--mono);
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-38);
+}
+.or::before, .or::after {
+  content: ''; flex: 1; height: 1px; background: var(--hair);
+}
+
+.tabs { display: flex; gap: 6px; margin-bottom: 4px; }
+.tabs button {
+  flex: 1; padding: 10px;
+  background: rgba(255, 255, 255, .45);
+  color: var(--ink-50);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
+  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: color .16s, border-color .16s, background .16s;
+}
+.tabs button[aria-selected="true"] {
+  color: var(--ink); background: #fff; border-color: rgba(19, 33, 50, .28);
+}
+
+.mine-list { list-style: none; margin: 0; padding: 0; }
+.mine-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 0; border-bottom: 1px solid var(--hair);
+}
+.mine-row:last-child { border-bottom: 0; }
+.mine-row > div { flex: 1; min-width: 0; }
+.mine-row b { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+.mine-row span {
+  display: block; margin-top: 2px;
+  font-size: 12px; line-height: 1.4; color: var(--ink-50);
+}
+.mine-row .link { flex: none; }
+.mine-empty { padding: 18px 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-50); }
+
+/* --------------------------------------------------------------- viewer */
+.viewer {
+  position: fixed; inset: 0; z-index: 70;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 20px;
+  background: rgba(19, 33, 50, .82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.viewer img {
+  max-width: 100%; max-height: 70vh;
+  border-radius: var(--r-md);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+}
+.viewer-close {
+  position: absolute; top: calc(14px + var(--safe-t)); right: 14px;
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, .16);
+  color: #fff; border: 0; border-radius: 50%; cursor: pointer;
+}
+.viewer-close:hover { background: rgba(255, 255, 255, .28); }
+.viewer-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  justify-content: center; text-align: center;
+  font-size: 13px; color: rgba(255, 255, 255, .82);
+}
+.viewer-bar .link { color: #ffb3a6; }
+
+/* --------------------------------------------------------- map markers */
+.rep-marker {
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 10px rgba(30, 50, 70, .4);
+  transition: transform .18s var(--ease);
+}
+.rep-marker:hover { transform: scale(1.14); }
+.rep-marker[data-s="passable"]   { background: var(--warn); }
+.rep-marker[data-s="slow"]       { background: #e0662f; }
+.rep-marker[data-s="impassable"] { background: var(--hazard); }
+.rep-marker .ic { width: 14px; height: 14px; color: #fff; }
+
+.pin-ghost {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(200, 64, 44, .3);
+  border: 2px solid var(--hazard);
+  box-shadow: 0 3px 10px rgba(30, 50, 70, .4);
+  cursor: grab;
+}
+
+/* ------------------------------------------------------------ wide screen
+   Above 860px the map has room to spare, so the panels become a left column
+   and the tab bar goes with them. Nothing reflows below that. */
+@media (min-width: 860px) {
+  .rain {
+    left: 16px; right: auto;
+    width: 400px;
+  }
+  .panel {
+    left: 16px; right: auto;
+    width: 400px;
+    bottom: calc(88px + var(--safe-b));
+    max-height: calc(100vh - 300px);
+  }
+  .tabbar {
+    left: 16px; right: auto;
+    width: 400px;
+    bottom: calc(20px + var(--safe-b));
+  }
+  .modal { align-items: center; }
+  .modal-card {
+    border-radius: var(--r-xl);
+    border-bottom: 1px solid var(--glass-br);
+    padding-bottom: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================== motion
+   Everything here is transform and opacity only. Animating width, height or
+   top forces the browser to re-lay-out every frame, which is what makes a
+   phone interface feel cheap. */
+
+.tabbar button {
+  position: relative;
+  -webkit-user-select: none; user-select: none;
+}
+.tabbar button:active { transform: scale(.95); }
+
+/* The active pill grows from the middle rather than snapping in. */
+.tabbar button::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 17px;
+  background: var(--ink);
+  transform: scale(.7);
+  opacity: 0;
+  transition: transform .22s var(--ease), opacity .18s var(--ease);
+  z-index: -1;
+}
+.tabbar button[aria-current="page"]::before { transform: scale(1); opacity: 1; }
+.tabbar button[aria-current="page"] { background: transparent; }
+
+.go, .ghost-btn, .link, .icon-btn, .route, .zone, .sev-row button, .tabs button {
+  -webkit-tap-highlight-color: transparent;
+}
+.go:active, .ghost-btn:active { transform: scale(.985); }
+.route:active { transform: scale(.99); }
+.sev-row button:active { transform: scale(.97); }
+.link:active { opacity: .6; }
+
+/* The route cards arrive one after the other, so the eye lands on the first. */
+.routes .route {
+  animation: cardIn .34s var(--ease) backwards;
+}
+.routes .route:nth-child(2) { animation-delay: .06s; }
+.routes .route:nth-child(3) { animation-delay: .12s; }
+@keyframes cardIn {
+  from { transform: translateY(8px) scale(.98); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* The verdict is the answer, so it fades in rather than appearing. */
+.verdict-line, .verdict-sub { animation: fadeUp .4s var(--ease) backwards; }
+.verdict-sub { animation-delay: .05s; }
+@keyframes fadeUp {
+  from { transform: translateY(5px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* Looking for a route: the button says so and keeps saying so. */
+.go[data-busy] { position: relative; overflow: hidden; }
+.go[data-busy]::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .22), transparent);
+  transform: translateX(-100%);
+  animation: sweep 1.15s linear infinite;
+}
+@keyframes sweep { to { transform: translateX(100%); } }
+
+.icon-btn[data-busy] .ic { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Modals slide their card up from the bottom and settle. */
+.modal { animation: veil .22s var(--ease); }
+@keyframes veil { from { opacity: 0; } to { opacity: 1; } }
+
+/* The rain figure counts into place when the reading changes. */
+.rain-peak { transition: color .3s var(--ease); }
+
+/* An empty list should say something, not just be blank space. */
+.zone-list:empty::after,
+.mine-list:empty::after {
+  content: '';
+  display: block; height: 60px;
+  background: linear-gradient(90deg, rgba(19,33,50,.05) 25%, rgba(19,33,50,.09) 37%, rgba(19,33,50,.05) 63%);
+  background-size: 400% 100%;
+  border-radius: var(--r-sm);
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { to { background-position: -135% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ====================================================== short screens
+   The Daylight mock was drawn at 402 by 874. Text does not shrink with the
+   viewport, so the same card that takes a quarter of a tall phone takes a third
+   of a 550px window, and two of them leave no map. Below 700px of height the
+   type comes down a step and the collapsed rain card drops its sub-line, which
+   is the one thing on it that repeats what the headline already said. */
+@media (max-height: 700px) {
+  .rain { padding: 12px 14px 3px; }
+  .rain-head { font-size: 21px; line-height: 1.12; }
+  .rain-peak { font-size: 33px; }
+  .rain-stats { margin-top: 5px; font-size: 11px; }
+  .rain[data-open="0"] .rain-sub { display: none; }
+
+  .card { padding: 13px 15px; }
+  .verdict-line { font-size: 20px; line-height: 1.22; }
+  .verdict-sub { margin-top: 6px; font-size: 12.5px; }
+  .routes { margin-top: 11px; }
+  .od { padding-bottom: 9px; }
+
+  .panel { bottom: calc(78px + var(--safe-b)); }
+  .tabbar { bottom: calc(10px + var(--safe-b)); padding: 6px; }
+  .tabbar button { padding: 9px 0; font-size: 12px; }
+
+  .mapctl button { width: 40px; height: 40px; border-radius: 13px; }
+  .mapctl { gap: 8px; }
+}
+
+/* Very short, which in practice means a desktop window somebody has made small.
+   The forecast detail stays available on tap, but the resting card is only the
+   answer. */
+@media (max-height: 560px) {
+  .rain-head { font-size: 19px; }
+  .rain[data-open="0"] .rain-stats { display: none; }
+  .verdict-line { font-size: 18px; }
+  .panel { max-height: min(40vh, calc(100vh - var(--rain-h, 170px) - 150px)); }
+}
+
+/* ------------------------------------------------- the panel's own fold
+   Same affordance as the rain card, for the same reason. The verdict sentence
+   is the answer and stays; the supporting line and the route cards are detail.
+   On a short screen the detail folds itself away once a route has been chosen,
+   because that is the moment the map matters most. */
+.panel-detail {
+  overflow: hidden;
+  transition: max-height .32s var(--ease), opacity .22s var(--ease);
+  max-height: 60vh;
+  opacity: 1;
+}
+.panel[data-open="0"] .panel-detail { max-height: 0; opacity: 0; }
+
+.panel-more {
+  display: block; width: 100%;
+  padding: 8px 0 2px; margin-top: 2px;
+  background: none; border: 0; cursor: pointer;
+}
+.panel-more .chev {
+  display: block; width: 26px; height: 5px; margin: 0 auto;
+  border-radius: 99px;
+  background: rgba(19, 33, 50, .18);
+  transition: background .16s, transform .28s var(--ease);
+}
+.panel-more:hover .chev { background: rgba(19, 33, 50, .32); }
+.panel[data-open="0"] .panel-more .chev { transform: scaleX(.6); }

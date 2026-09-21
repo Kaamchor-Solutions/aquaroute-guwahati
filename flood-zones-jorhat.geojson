@@ -1,0 +1,204 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "city": "Jorhat, Assam",
+    "status": "DERIVED FROM NEWS REPORTS AND NDEM DATA",
+    "note": "Flood-prone zones derived from news reports (July 2026), NDEM satellite data (1998-2022), and published research. These are approximate polygons around known waterlogging localities. Not surveyed drainage data. Verify with local knowledge.",
+    "sources": "Assam Tribune, Times of India, NDEM/NRSC, Sentinel-1 SAR studies",
+    "lastReviewed": "2026-08-28"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "tarun-phukan-road",
+        "name": "Tarun Phukan Road",
+        "severity": "severe",
+        "note": "Among worst-hit every monsoon. Chronic waterlogging.",
+        "typicalDepth": "knee-deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2050,26.7585],[94.2080,26.7585],[94.2080,26.7565],[94.2050,26.7565],[94.2050,26.7585]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "tarajan",
+        "name": "Tarajan",
+        "severity": "severe",
+        "note": "Chronic waterlogging area.",
+        "typicalDepth": "knee to waist deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2020,26.7555],[94.2055,26.7555],[94.2055,26.7530],[94.2020,26.7530],[94.2020,26.7555]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "choladhara",
+        "name": "Choladhara",
+        "severity": "moderate",
+        "note": "Near Tocklai river area. Recurring waterlogging.",
+        "typicalDepth": "ankle to knee deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.1990,26.7545],[94.2020,26.7545],[94.2020,26.7520],[94.1990,26.7520],[94.1990,26.7545]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "at-road",
+        "name": "A.T. Road",
+        "severity": "moderate",
+        "note": "Major arterial road, frequently inundated.",
+        "typicalDepth": "ankle deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2060,26.7550],[94.2100,26.7550],[94.2100,26.7530],[94.2060,26.7530],[94.2060,26.7550]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "sonali-jayanti-nagar",
+        "name": "Sonali Jayanti Nagar",
+        "severity": "moderate",
+        "note": "Residential area, waterlogging during heavy rain.",
+        "typicalDepth": "ankle deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2085,26.7575],[94.2115,26.7575],[94.2115,26.7555],[94.2085,26.7555],[94.2085,26.7575]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bongalpukhuri",
+        "name": "Bongalpukhuri",
+        "severity": "severe",
+        "note": "Low-lying area, one of worst affected.",
+        "typicalDepth": "knee to waist deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2010,26.7515],[94.2045,26.7515],[94.2045,26.7495],[94.2010,26.7495],[94.2010,26.7515]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "rajamaidam-new-colony",
+        "name": "Rajamaidam New Colony",
+        "severity": "moderate",
+        "note": "Residential colony, recurring flooding.",
+        "typicalDepth": "ankle to knee deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2100,26.7565],[94.2130,26.7565],[94.2130,26.7545],[94.2100,26.7545],[94.2100,26.7565]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "borigaon",
+        "name": "Borigaon",
+        "severity": "severe",
+        "note": "Near Bhogdoi river. Breached July 2026. Multiple villages submerged.",
+        "typicalDepth": "waist to car-high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.1950,26.7610],[94.2000,26.7610],[94.2000,26.7580],[94.1950,26.7580],[94.1950,26.7610]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "bhogdoi-floodplain",
+        "name": "Bhogdoi River Floodplain",
+        "severity": "severe",
+        "note": "Broad floodplain along Bhogdoi river. Overflows embankments during monsoon.",
+        "typicalDepth": "variable, can be car-high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.1900,26.7630],[94.2050,26.7630],[94.2050,26.7590],[94.1900,26.7590],[94.1900,26.7630]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "tocklai-river",
+        "name": "Tocklai River Area",
+        "severity": "moderate",
+        "note": "Choked river contributes to urban waterlogging. Cleaning drive 2026.",
+        "typicalDepth": "ankle to knee deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.1970,26.7565],[94.2000,26.7565],[94.2000,26.7535],[94.1970,26.7535],[94.1970,26.7565]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "south-lowlying",
+        "name": "Low-lying area south of centre",
+        "severity": "moderate",
+        "note": "Low elevation area prone to waterlogging.",
+        "typicalDepth": "ankle deep"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2040,26.7505],[94.2090,26.7505],[94.2090,26.7475],[94.2040,26.7475],[94.2040,26.7505]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "jhanji-floodplain",
+        "name": "Jhanji River Floodplain (Teok)",
+        "severity": "severe",
+        "note": "Embankment breached Oct 2025. 17 villages submerged.",
+        "typicalDepth": "car-high to house-high"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [94.2200,26.7510],[94.2300,26.7510],[94.2300,26.7450],[94.2200,26.7450],[94.2200,26.7510]
+        ]]
+      }
+    }
+  ]
+}
