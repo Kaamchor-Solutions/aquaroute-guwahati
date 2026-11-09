@@ -5,14 +5,20 @@
   "name": "aquaroute-guwahati",
   "main": "src/index.js",
   "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],   // agents/mcp/server needs AsyncLocalStorage
 
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
     "html_handling": "none",
     "not_found_handling": "none",
-    "run_worker_first": ["/api/*", "/photo/*"]
+    "run_worker_first": ["/api/*", "/photo/*", "/mcp"]
   },
+
+  // The MCP endpoint is public; this is its only guard. 60 requests per minute per IP.
+  "ratelimits": [
+    { "name": "MCP_LIMITER", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } }
+  ],
 
   // Public by design: a Google OAuth client id identifies the application, it
   // does not authorise anything. Set it with:

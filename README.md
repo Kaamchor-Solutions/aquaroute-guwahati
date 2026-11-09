@@ -267,6 +267,39 @@ locality caught the cloudburst. The copy says "should be clear", never "is clear
 access can be withdrawn without a reason. Fine for a class or a neighbourhood. Real
 traffic means self-hosting OSRM.
 
+## Flood data over MCP (Claude and other AI tools)
+
+A public, read-only [MCP](https://modelcontextprotocol.io) server runs on the same Worker at
+`/mcp`. Anyone can plug the live and historical community reports into an AI assistant and
+ask things like "which roads in Guwahati are impassable right now?".
+
+**Endpoint:** `https://<your-worker>.workers.dev/mcp` (Streamable HTTP, no key needed)
+
+| Tool | What it answers |
+|---|---|
+| `get_area_summary` | Counts by severity, how many reports are live, the worst ~1 km cells. Start here. |
+| `get_reports` | Reports newest-first. Filter by `hours` (up to 720), `severity`, or `lat`+`lon`+`radius_m`. |
+
+**Connect it**
+
+- **Claude (claude.ai / desktop):** Settings > Connectors > Add custom connector, paste the URL above.
+- **Claude Code:** `claude mcp add --transport http aquaroute https://<your-worker>.workers.dev/mcp`
+- **Anything else:** point any MCP client that speaks Streamable HTTP at the URL.
+- **Try it by hand:** `npx @modelcontextprotocol/inspector` and connect to the URL.
+
+**What it exposes, and what it does not.** The server reads one SQL view, `public_reports`,
+built on a history table (`report_log`). It carries location, severity, the note, time and
+flag count. It never carries the photo, the reporter's hashed IP, the delete token or any
+account. History outlives the 12-hour live window, which is how "last week" questions work.
+Notes are free text from the public, so the server tells the model to treat them as data,
+not instructions. Reports are unverified.
+
+**Limits.** 60 requests per minute per IP, 100 reports per call, 30 days of lookback.
+
+**Turn it on** (once per database, after the schemas above): `npm run db:mcp`, then
+`npm run worker:deploy`. To change the rate, edit `ratelimits` in `wrangler.jsonc`.
+History starts when you run the migration; nothing before that was ever stored.
+
 ## Files
 
 ```

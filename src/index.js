@@ -29,6 +29,7 @@
 import {
   currentUser, register, login, logout, me, myReports, googleSignIn,
 } from './auth.js';
+import { handleMcp } from './mcp.js';
 
 const TTL_HOURS = 12;
 const MAX_PHOTO = 220 * 1024;
@@ -62,6 +63,11 @@ async function reporterId(request, env) {
 
 const newId = () =>
   [...crypto.getRandomValues(new Uint8Array(9))].map((b) => b.toString(16).padStart(2, '0')).join('');
+
+/** History in report_log (schema-mcp.sql) feeds the public MCP server. It must
+ *  never break reporting, so a failure here is logged, not thrown. */
+const logq = (env, sql, ...args) =>
+  env.DB.prepare(sql).bind(...args).run().catch((e) => console.error('report_log', e));
 
 /** Old reports are deleted, not merely hidden. Nothing anybody uploads sits
  *  around after it has stopped being useful. */
@@ -167,6 +173,11 @@ async function createReport(request, env) {
            t + TTL_HOURS * 3600, who, delToken).run();
   }
 
+  await logq(env,
+    `INSERT OR IGNORE INTO report_log (id, lat, lon, severity, note, created_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    id, lat, lon, severity, note || null, t, t + TTL_HOURS * 3600);
+
   await sweep(env);
   return json({ ok: true, id, del_token: delToken, expires_at: t + TTL_HOURS * 3600 });
 }
@@ -198,6 +209,9 @@ async function flagReport(request, env, id) {
   await env.DB.prepare(
     `UPDATE reports SET flags = ?, hidden = ? WHERE id = ?`,
   ).bind(flags, flags >= HIDE_AT_FLAGS ? 1 : 0, id).run();
+  await logq(env,
+    `UPDATE report_log SET flags = ?, status = ? WHERE id = ? AND status != 'deleted'`,
+    flags, flags >= HIDE_AT_FLAGS ? 'hidden' : 'ok', id);
 
   return json({ ok: true, flags, hidden: flags >= HIDE_AT_FLAGS });
 }
@@ -226,6 +240,7 @@ async function deleteReport(request, env, id) {
   }
 
   await env.DB.prepare(`DELETE FROM reports WHERE id = ?`).bind(id).run();
+  await logq(env, `UPDATE report_log SET status = 'deleted' WHERE id = ?`, id);
   return json({ ok: true });
 }
 
@@ -263,9 +278,11 @@ async function servePhoto(env, id) {
 // -------------------------------------------------------------------- router
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
+
+    if (path === '/mcp') return handleMcp(request, env, ctx);
 
     try {
       // The page asks what it is allowed to offer rather than hard-coding it,

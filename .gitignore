@@ -4,3 +4,9 @@ node_modules/
 .env
 *.log
 .DS_Store
+
+# local design backups and handoff files
+.backup-v7/
+.design-backup/
+*.zip
+*.docx

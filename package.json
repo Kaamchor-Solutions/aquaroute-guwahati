@@ -1,12 +1,21 @@
 {
-  "name": "aquaroute-jorhat",
+  "name": "aquaroute-guwahati",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "npx serve . -p 3000 -s",
     "worker:dev": "npx wrangler dev",
     "worker:deploy": "npx wrangler deploy",
-    "worker:create-db": "npx wrangler d1 create aquaroute-reports"
+    "db:mcp": "npx wrangler d1 execute aquaroute --remote --file=schema-mcp.sql"
   },
-  "description": "Flood-avoidance web app for commuters in Jorhat, Assam"
+  "description": "Flood-avoidance web app for commuters in Guwahati, Assam",
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "agents": "^0.33.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  }
 }
