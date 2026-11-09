@@ -267,6 +267,22 @@ locality caught the cloudburst. The copy says "should be clear", never "is clear
 access can be withdrawn without a reason. Fine for a class or a neighbourhood. Real
 traffic means self-hosting OSRM.
 
+## Public dashboard and open data routes
+
+`/dashboard` is a public page with live counts by severity, a map of live reports, the worst
+~1 km areas, reports over time (hourly for 24 h, daily for 7 and 30 days, with a table view)
+and the latest reports. It is linked from the app's map controls.
+
+| Route | Returns |
+|---|---|
+| `GET /dashboard` | The dashboard page |
+| `GET /api/reports` | Live reports as JSON (up to 300) |
+| `GET /api/stats?hours=24` | Summary, time series, hotspots, live points (1 to 720 hours) |
+| `POST /mcp` | The MCP server, below |
+
+`/api/stats` and the MCP tool `get_area_summary` share one query layer (`src/stats.js`) over
+the sanitized `public_reports` view, so they always agree.
+
 ## Flood data over MCP (Claude and other AI tools)
 
 A public, read-only [MCP](https://modelcontextprotocol.io) server runs on the same Worker at

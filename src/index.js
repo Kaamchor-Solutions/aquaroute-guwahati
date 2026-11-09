@@ -30,6 +30,7 @@ import {
   currentUser, register, login, logout, me, myReports, googleSignIn,
 } from './auth.js';
 import { handleMcp } from './mcp.js';
+import { getStats } from './stats.js';
 
 const TTL_HOURS = 12;
 const MAX_PHOTO = 220 * 1024;
@@ -312,7 +313,13 @@ export default {
       const photo = path.match(/^\/photo\/([0-9a-f]{18})$/);
       if (photo && request.method === 'GET') return servePhoto(env, photo[1]);
 
+      if (path === '/api/stats' && request.method === 'GET') {
+        const h = Math.min(720, Math.max(1, parseInt(url.searchParams.get('hours'), 10) || 24));
+        return json({ ok: true, ...(await getStats(env, h, true)) });
+      }
+
       if (path === '/') return env.ASSETS.fetch(new Request(new URL('/index.html', request.url), request));
+      if (path === '/dashboard') return env.ASSETS.fetch(new Request(new URL('/dashboard.html', request.url), request));
       return new Response('Not found', { status: 404 });
     } catch (err) {
       console.error(err);
