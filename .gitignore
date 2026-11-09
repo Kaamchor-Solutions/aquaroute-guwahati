@@ -10,3 +10,4 @@ node_modules/
 .design-backup/
 *.zip
 *.docx
+.playwright-mcp/
