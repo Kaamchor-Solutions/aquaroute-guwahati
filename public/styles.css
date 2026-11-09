@@ -574,6 +574,41 @@ body {
   color: var(--ink-50);
 }
 
+/* Zone browser tools: search + severity filter. Same glass language as the
+   rest of the card; chips reuse the tabbar active treatment. */
+.zone-tools { margin-top: 10px; display: grid; gap: 8px; }
+.zone-tools input[type="search"] {
+  width: 100%; padding: 10px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--hair);
+  background: rgba(255, 255, 255, .6);
+  color: var(--ink); font: inherit; font-size: 14px; outline: none;
+}
+.zone-tools input[type="search"]:focus {
+  outline: none; border-color: var(--rain); background: #fff;
+  box-shadow: 0 0 0 3px rgba(28, 95, 168, .12);
+}
+.zone-filters { display: flex; gap: 6px; }
+.zone-filters button {
+  flex: 1; padding: 8px 0; border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: rgba(255, 255, 255, .5);
+  color: var(--ink-62);
+  font: 600 12px var(--sans); cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s;
+}
+.zone-filters button[aria-pressed="true"] {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.zone-empty {
+  padding: 14px 4px; color: var(--ink-50);
+  font-size: 13px; list-style: none;
+}
+
+/* Share row appears only after a route succeeds. */
+.share-row { margin-top: 4px; }
+.share-row .ghost-btn.wide { padding: 12px; font-size: 14px; }
+
 .live-count {
   margin-left: 8px;
   display: inline-flex; align-items: center; gap: 5px;

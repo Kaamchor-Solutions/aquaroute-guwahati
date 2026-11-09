@@ -94,7 +94,7 @@
 
 <!-- Map controls, in the band between the rain card and the panel. -->
 <div class="mapctl" id="mapctl">
-  <button type="button" id="osmBtn" aria-label="OpenStreetMap base" aria-pressed="false" title="OSM">
+  <button type="button" id="osmBtn" data-i18n-aria="streets" aria-label="Streets" aria-pressed="false" title="Streets">
     <svg class="ic"><use href="#i-pin"/></svg>
   </button>
   <button type="button" id="satBtn" data-i18n-aria="satellite" aria-label="Satellite" aria-pressed="false">
@@ -152,6 +152,11 @@
       <div class="routes" id="results" hidden></div>
 
       <p class="msg" id="msg" role="status"></p>
+
+      <div class="share-row" id="shareRow" hidden>
+        <button class="ghost-btn wide" id="shareBtn" type="button" data-i18n="share_route">Share this route</button>
+        <p class="msg" id="shareMsg" role="status"></p>
+      </div>
     </div>
 
     <button class="panel-more" id="routeMore" type="button" hidden
@@ -166,6 +171,15 @@
 <section class="panel" id="panelZones" data-tab="zones" hidden>
   <div class="card">
     <p class="eyebrow" id="zonesH"><span data-i18n="zones_title">Known waterlogging zones</span></p>
+    <div class="zone-tools">
+      <input id="zoneSearch" type="search" autocomplete="off" spellcheck="false"
+             data-i18n-ph="zones_search_ph" placeholder="Search zones" aria-label="Search zones">
+      <div class="zone-filters" role="group" aria-label="Filter by severity">
+        <button type="button" data-sevfilter="all" aria-pressed="true" data-i18n="zones_all">All</button>
+        <button type="button" data-sevfilter="severe" aria-pressed="false" data-i18n="zones_severe">Severe</button>
+        <button type="button" data-sevfilter="moderate" aria-pressed="false" data-i18n="zones_moderate">Moderate</button>
+      </div>
+    </div>
     <ul class="zone-list" id="zoneList"></ul>
     <p class="provenance" id="provenance"></p>
   </div>

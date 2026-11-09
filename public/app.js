@@ -505,6 +505,10 @@ function showRoutes() {
   setPlanOpen(false);
   labelOd();
   showTab('route');
+  // The route now has an address. Share row appears only on success.
+  if ($('shareRow')) $('shareRow').hidden = false;
+  if ($('shareMsg')) $('shareMsg').textContent = '';
+  syncRouteUrl();
 }
 
 /* Whatever the cards are doing, the route has to stay legible: never leave less
@@ -555,20 +559,39 @@ function select(i) {
 }
 
 /* ------------------------------------------------------------------ zones */
-function listZones() {
-  $('zoneList').innerHTML = zones.features.map((f) => {
-    const p = f.properties;
-    return `<li><button class="zone" type="button" data-id="${p.id}">
-              <span class="zone-dot" data-s="${p.severity}"></span>
-              <span class="zone-name">${esc(zf(p, 'name'))}</span>
-              <span class="zone-depth">${esc(zf(p, 'typicalDepth'))}</span>
-            </button></li>`;
-  }).join('');
+let zoneQuery = '', zoneSev = 'all';
 
-  $('zoneList').querySelectorAll('.zone').forEach((el) => el.addEventListener('click', () => {
+function zoneMatches(p) {
+  if (zoneSev !== 'all' && p.severity !== zoneSev) return false;
+  if (!zoneQuery) return true;
+  const q = zoneQuery.toLowerCase();
+  const hay = [p.name, p.name_as, p.typicalDepth, p.typicalDepth_as, p.note, p.note_as]
+    .filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(q);
+}
+
+function listZones() {
+  const list = $('zoneList');
+  if (!list) return;
+  const shown = (zones?.features || []).filter((f) => zoneMatches(f.properties));
+  if (!shown.length) {
+    list.innerHTML = '<li class="zone-empty">' + esc(t('zones_empty')) + '</li>';
+  } else {
+    list.innerHTML = shown.map((f) => {
+      const p = f.properties;
+      return `<li><button class="zone" type="button" data-id="${p.id}">
+                <span class="zone-dot" data-s="${p.severity}"></span>
+                <span class="zone-name">${esc(zf(p, 'name'))}</span>
+                <span class="zone-depth">${esc(zf(p, 'typicalDepth'))}</span>
+              </button></li>`;
+    }).join('');
+  }
+
+  list.querySelectorAll('.zone').forEach((el) => el.addEventListener('click', () => {
     if (!mapReady) return;
     if (innerWidth < 860) showTab(null);        // let the map have the screen
     const f = zones.features.find((x) => x.properties.id === el.dataset.id);
+    if (!f) return;
     const ring = f.geometry.coordinates[0];
     const lons = ring.map((c) => c[0]), lats = ring.map((c) => c[1]);
     map.fitBounds([[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]],
@@ -577,6 +600,88 @@ function listZones() {
 
   $('provenance').innerHTML =
     '<b>' + t('zones_unverified') + '</b>' + t('zones_provenance');
+}
+
+function initZoneTools() {
+  const search = $('zoneSearch');
+  if (search && !search.dataset.wired) {
+    search.dataset.wired = '1';
+    search.addEventListener('input', () => {
+      zoneQuery = search.value.trim();
+      listZones();
+    });
+  }
+  document.querySelectorAll('[data-sevfilter]').forEach((btn) => {
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      zoneSev = btn.dataset.sevfilter;
+      document.querySelectorAll('[data-sevfilter]').forEach((b) =>
+        b.setAttribute('aria-pressed', String(b === btn)));
+      listZones();
+    });
+  });
+}
+
+/* ------------------------------------------------------------ share link
+   A route is worth warning someone about, so it gets a URL. ?from=&to=
+   carries the typed place names, never coordinates, and opening one
+   refills the form and plans immediately. */
+function routeShareUrl() {
+  const from = $('fromInput').value.trim();
+  const to = $('toInput').value.trim();
+  const u = new URL(location.href.split('?')[0]);
+  if (from) u.searchParams.set('from', from);
+  if (to) u.searchParams.set('to', to);
+  return u.toString();
+}
+
+function syncRouteUrl() {
+  try {
+    history.replaceState(null, '', routeShareUrl());
+  } catch { /* file:// or private mode: the button still copies */ }
+}
+
+function initShare() {
+  const btn = $('shareBtn');
+  if (!btn || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', async () => {
+    const url = routeShareUrl();
+    const msg = $('shareMsg');
+    // System share sheet on phones, clipboard everywhere else.
+    if (navigator.share) {
+      try { await navigator.share({ title: document.title, url }); return; }
+      catch { /* dismissed: fall through to clipboard */ }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      if (msg) msg.textContent = t('link_copied');
+    } catch {
+      // Clipboard blocked (insecure context, permissions): select the URL
+      // via the address bar hint instead of failing silently.
+      try { syncRouteUrl(); } catch { /* ignore */ }
+      if (msg) msg.textContent = t('link_copy_failed');
+    }
+  });
+}
+
+function initSharedRoute() {
+  let from = null, to = null;
+  try {
+    const q = new URLSearchParams(location.search);
+    from = q.get('from'); to = q.get('to');
+  } catch { /* malformed query: ignore */ }
+  if (from) $('fromInput').value = from;
+  if (to) $('toInput').value = to;
+  if (from || to) {
+    labelOd();
+    setPlanOpen(!(from && to));
+    if (from && to) {
+      // Let the map settle first; plan() handles its own errors.
+      setTimeout(() => plan(), 600);
+    }
+  }
 }
 
 /* ------------------------------------------------------------------- misc */
@@ -1361,6 +1466,8 @@ function onLanguageChange() {
                   paintForecast(lastRain.hours, lastRain.mm, lastRain.total, lastRain.peak); }
   renderGoogleButton();
   $('satBtn').setAttribute('aria-label', t('satellite'));
+  $('osmBtn').setAttribute('aria-label', t('streets'));
+  $('osmBtn').setAttribute('title', t('streets'));
   $('centreBtn').setAttribute('aria-label', t('recentre'));
 }
 
@@ -1448,8 +1555,11 @@ $('centreBtn').addEventListener('click', () => {
 });
 
 setAuthMode('login');
+initZoneTools();
+initShare();
 labelOd();
 setPlanOpen(false);
+initSharedRoute();
 applyLang(lang());
 initRain();
 setRouteOpen(true);

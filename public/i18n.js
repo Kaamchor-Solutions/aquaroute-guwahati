@@ -58,6 +58,9 @@ const I18N = {
     verdict_costs: 'There is one way round it. It costs ',
     verdict_costs_free: 'There is a way round it that costs you nothing.',
     verdict_take_quick: 'Take the quick one: ',
+    share_route: 'Share this route',
+    link_copied: 'Link copied. Send it to warn someone behind you.',
+    link_copy_failed: 'Could not copy. Copy the address bar instead.',
     minute: 'minute',
     minutes: 'minutes',
     tag_dry: 'Dry',
@@ -69,6 +72,11 @@ const I18N = {
 
     /* zones */
     zones_title: 'Known waterlogging zones',
+    zones_search_ph: 'Search zones',
+    zones_all: 'All',
+    zones_severe: 'Severe',
+    zones_moderate: 'Moderate',
+    zones_empty: 'No zones match that search.',
     zones_unverified: 'Unverified.',
     zones_provenance: ' These outlines were drawn around localities with a public reputation for waterlogging. They are not a drainage survey. If you know these streets, correct the map data and it updates.',
     zones_failed: 'The waterlogging zones could not be loaded, so routes cannot be checked against them.',
@@ -217,6 +225,9 @@ const I18N = {
     verdict_costs: 'ঘূৰি যোৱাৰ এটা পথ আছে। ইয়াত লাগে ',
     verdict_costs_free: 'ঘূৰি যোৱাৰ পথ এটা আছে, অতিৰিক্ত সময় নালাগে।',
     verdict_take_quick: 'সোনকালটো লওক: ',
+    share_route: 'এই পথটো শ্বেয়াৰ কৰক',
+    link_copied: 'লিংক কপি হ\'ল। পিছত অহা কাৰোবাক সতৰ্ক কৰিবলৈ পঠিয়াওক।',
+    link_copy_failed: 'কপি কৰিব পৰা নগ\'ল। ঠিকনাৰ শাৰীৰ পৰা কপি কৰক।',
     minute: 'মিনিট',
     minutes: 'মিনিট',
     tag_dry: 'শুকান',
@@ -228,6 +239,11 @@ const I18N = {
 
     /* zones */
     zones_title: 'জ্ঞাত পানী জমা হোৱা অঞ্চল',
+    zones_search_ph: 'অঞ্চল বিচাৰক',
+    zones_all: 'সকলো',
+    zones_severe: 'গুৰুতৰ',
+    zones_moderate: 'মধ্যমীয়া',
+    zones_empty: 'সেই সন্ধানত কোনো অঞ্চল পোৱা নগ\'ল।',
     zones_unverified: 'অসত্যাপিত।',
     zones_provenance: ' পানী জমা হোৱাৰ বাবে জনাজাত অঞ্চলবোৰৰ চাৰিওফালে এই সীমাৰেখা আঁকা হৈছে। ই কোনো নিকাশ সমীক্ষা নহয়। আপুনি এই পথবোৰ জানিলে তথ্য শুধৰাই দিব পাৰে, মানচিত্ৰ নিজেই সলনি হ\'ব।',
     zones_failed: 'পানী জমা হোৱা অঞ্চলবোৰ ল\'ড হোৱা নাই, সেয়েহে পথ পৰীক্ষা কৰিব নোৱাৰি।',
